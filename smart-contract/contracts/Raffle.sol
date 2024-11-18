@@ -16,6 +16,12 @@ error Raffle__TransferFailed();
 error Raffle__NotOpen();
 error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
 
+/**
+ * @title A sample Raffle contract
+ * @author Sumit Singh
+ * @notice This contract is for creating an untemperable decentralized smart contract
+ * @dev This implements Chainlink VRF and Chainlink Automation
+ */
 contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     /* Type Declarations */
     enum RaffleState {
@@ -43,6 +49,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     event RequestedRaffleWinner(uint256 indexed requestId);
     event WinnerPicked(address indexed winner);
 
+    /* Functions */
     constructor(
         address vrfCoordinatorV2,
         uint256 entranceFee,
@@ -97,8 +104,8 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
      * - The lottery should be in an "open" state
      */
     function checkUpkeep(
-        bytes calldata /* checkData */
-    ) external view override returns (bool upkeepNeeded, bytes memory /* performData */) {
+        bytes memory /* checkData */
+    ) public view override returns (bool upkeepNeeded, bytes memory /* performData */) {
         bool isOpen = s_raffleState == RaffleState.OPEN;
         bool timePassed = (block.timestamp - s_lastTimeStamp) > i_interval;
         bool hasPlayers = s_players.length > 0;
@@ -109,7 +116,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     }
 
     function performUpkeep(bytes calldata /* performData */) external override {
-        (bool upkeepNeeded, ) = this.checkUpkeep("");
+        (bool upkeepNeeded, ) = checkUpkeep("");
         if (!upkeepNeeded) {
             revert Raffle__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffleState));
         }
@@ -148,6 +155,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     }
 
     /* View/Pure Functions */
+
     function getEntranceFee() public view returns (uint256) {
         return i_entranceFee;
     }
@@ -158,5 +166,25 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
     function getRecentWinner() public view returns (address) {
         return s_recentWinner;
+    }
+
+    function getRaffleState() public view returns (RaffleState) {
+        return s_raffleState;
+    }
+
+    function getNumberOfPlayers() public view returns (uint256) {
+        return s_players.length;
+    }
+
+    function getLatestTimeStamp() public view returns (uint256) {
+        return s_lastTimeStamp;
+    }
+
+    function getNumWords() public pure returns (uint256) {
+        return NUM_WORDS;
+    }
+
+    function getRequestConfirmations() public pure returns (uint16) {
+        return REQUEST_CONFIRMATIONS;
     }
 }
