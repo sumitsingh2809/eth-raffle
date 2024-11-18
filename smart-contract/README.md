@@ -11,3 +11,8 @@ REPORT_GAS=true npx hardhat test
 npx hardhat node
 npx hardhat ignition deploy ./ignition/modules/Lock.ts
 ```
+
+# Resources
+
+- [Chainlink VRF](https://docs.chain.link/vrf/v2-5/getting-started)
+- [Chainlink keeper/automation](https://docs.chain.link/chainlink-automation)
