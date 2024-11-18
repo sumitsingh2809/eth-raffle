@@ -1,0 +1,6 @@
+> pnpm init
+> pnpm add -D hardhat
+> pnpm hardhat init
+> pnpm i -D hardhat-deploy hardhat-deploy-ethers solhint
+> pnpm i @chainlink/contracts dotenv
+
