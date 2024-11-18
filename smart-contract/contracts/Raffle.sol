@@ -13,8 +13,15 @@ import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/autom
 
 error Raffle_NotEnoughETHEntered();
 error Raffle_TransferFailed();
+error Raffle_NotOpen();
 
 contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
+    /* Type Declarations */
+    enum RaffleState {
+        OPEN,
+        CALCULATING
+    }
+
     /* State Variables */
     uint256 private immutable i_entranceFee;
     bytes32 private immutable i_keyHash;
@@ -26,6 +33,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
     // Lottery Variables
     address private s_recentWinner;
+    RaffleState private s_raffleState;
 
     /* Events (naming should be reverse of function name) */
     event RaffleEnter(address indexed player);
@@ -43,11 +51,15 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         i_keyHash = keyHash;
         i_subscriptionId = subscriptionId;
         i_callbackGasLimit = callbackGasLimit;
+        s_raffleState = RaffleState.OPEN;
     }
 
     function enterRaffle() public payable {
         if (msg.value < i_entranceFee) {
             revert Raffle_NotEnoughETHEntered();
+        }
+        if (s_raffleState != RaffleState.OPEN) {
+            revert Raffle_NotOpen();
         }
 
         s_players.push(payable(msg.sender));
@@ -85,6 +97,8 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     function performUpkeep(bytes calldata performData) external override {}
 
     function requestRandomWinner() external {
+        s_raffleState = RaffleState.CALCULATING;
+
         uint256 requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: i_keyHash,
@@ -111,6 +125,8 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         }
 
         emit WinnerPicked(recentWinner);
+        s_players = new address payable[](0);
+        s_raffleState = RaffleState.OPEN;
     }
 
     /* View/Pure Functions */
