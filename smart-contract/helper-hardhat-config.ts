@@ -1,18 +1,20 @@
+import { Address } from "hardhat-deploy/types";
+
 type NetworkConfig = {
   [key: number]: {
     name: string;
-    ethUsdPriceFeed: string;
+    vrfCoordinatorV2: Address;
   };
 };
 
 const networkConfig: NetworkConfig = {
   11155111: {
     name: "sepolia",
-    ethUsdPriceFeed: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
+    vrfCoordinatorV2: "0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B", // https://vrf.chain.link/sepolia
   },
   137: {
     name: "polygon",
-    ethUsdPriceFeed: "0xF9680D99D6C9589e2a93a78A04A279e509205945",
+    vrfCoordinatorV2: "0xec0Ed46f36576541C75739E915ADbCb3DE24bD77", // https://vrf.chain.link/polygon
   },
 };
 
@@ -20,4 +22,4 @@ const developmentChains = ["hardhat", "localhost"];
 const DECIMALS = 8;
 const INITIAL_ANSWER = 2000_00000000;
 
-export { DECIMALS, INITIAL_ANSWER, developmentChains, networkConfig };
+export { DECIMALS, developmentChains, INITIAL_ANSWER, networkConfig };
