@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "node": "pnpm hardhat node",
-    "compile": "pnpm hardhat compile"
+    "compile": "pnpm hardhat compile",
+    "deploy:hardhat": "pnpm hardhat deploy",
+    "deploy:hardhat:mocks": "pnpm hardhat deploy --tags mocks",
+    "deploy:localhost": "pnpm hardhat deploy --network localhost",
+    "deploy:sepolia": "pnpm hardhat deploy --network sepolia"
   },
   "keywords": [],
   "author": "",
