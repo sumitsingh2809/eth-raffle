@@ -3,6 +3,7 @@ import { ethers, network } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { developmentChains, networkConfig } from "../helper-hardhat-config";
+import { VRFCoordinatorV2_5Mock } from "../typechain-types";
 import { verify } from "../utils/verify";
 
 const VRF_SUB_FUND_AMOUNT = ethers.parseEther("2");
@@ -18,12 +19,13 @@ const deployRaffle: DeployFunction = async function (hre: HardhatRuntimeEnvironm
 
   let vrfCoordinatorAddress: string;
   let subscriptionId: string;
+  let vrfCoordinatorV2_5Mock: VRFCoordinatorV2_5Mock;
   if (isDevelopmentChain) {
     const vrfCoordinatorV2_5MockDeployment = await deployments.get("VRFCoordinatorV2_5Mock");
     vrfCoordinatorAddress = vrfCoordinatorV2_5MockDeployment.address;
 
     // creating subscription programmatically
-    const vrfCoordinatorV2_5Mock = await ethers.getContractAt("VRFCoordinatorV2_5Mock", vrfCoordinatorAddress);
+    vrfCoordinatorV2_5Mock = await ethers.getContractAt("VRFCoordinatorV2_5Mock", vrfCoordinatorAddress);
     const createSubscriptionTxn = await vrfCoordinatorV2_5Mock.createSubscription();
     const createSubscriptionReceipt = await createSubscriptionTxn.wait(1);
     if (!createSubscriptionReceipt) throw new Error("createSubscriptionReceipt not found");
@@ -50,6 +52,12 @@ const deployRaffle: DeployFunction = async function (hre: HardhatRuntimeEnvironm
     log: true,
     waitConfirmations: networkConfig[chainId]["waitConfirmations"],
   });
+
+  // Add Consumer
+  if (isDevelopmentChain) {
+    await vrfCoordinatorV2_5Mock!.addConsumer(subscriptionId, raffle.address);
+    log("Added Consumer to mock:", raffle.address);
+  }
 
   // Verify Contract
   if (!isDevelopmentChain && process.env.ETHERSCAN_API_KEY) {
