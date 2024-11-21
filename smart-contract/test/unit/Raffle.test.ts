@@ -176,5 +176,64 @@ import { RaffleInterface } from "../../typechain-types/Raffle";
             vrfCoordinatorV2_5Mock.fulfillRandomWords(1, await raffle.getAddress())
           ).to.be.revertedWithCustomError(vrfCoordinatorV2_5Mock, "InvalidRequest");
         });
+
+        it("picks a winner, resets the lottery, and sends money", async () => {
+          const additionalEntrants = 3n;
+          const startingAccountIndex = 1; // since deployer = 0
+          const accounts = await ethers.getSigners();
+
+          // console.log("account", accounts[0].address);
+          for (let i = startingAccountIndex; i < startingAccountIndex + +additionalEntrants.toString(); i++) {
+            const account = accounts[i];
+            // console.log("account", account.address);
+            const raffleConnectedAccount = raffle.connect(account);
+
+            await raffleConnectedAccount.enterRaffle({ value: raffleEntranceFee });
+          }
+
+          const startingTimeStamp = await raffle.getLatestTimeStamp();
+          // performUpKeep (mock being chainlink keeper)
+          // fulfillRandomWords (mock being chainlink VRF)
+          // In testnet, we will have to wait for the "fulfillRandomWords" to be called
+          await new Promise(async (resolve, reject) => {
+            // raffle.once("WinnerPicked", () => {});
+            raffle.once(raffle.filters.WinnerPicked(), async (winner) => {
+              try {
+                const recentWinner = await raffle.getRecentWinner();
+                const raffleState = await raffle.getRaffleState();
+                const endingTimeStamp = await raffle.getLatestTimeStamp();
+                const numPlayers = await raffle.getNumberOfPlayers();
+                const winnerEndingBalance = await ethers.provider.getBalance(accounts[1]);
+
+                // console.log({ recentWinner, winnerEndingBalance });
+                assert.equal(numPlayers, 0n);
+                assert.equal(raffleState, RaffleState.OPEN);
+                assert(endingTimeStamp > startingTimeStamp);
+                assert.equal(
+                  winnerEndingBalance,
+                  winnerStartingBalance + raffleEntranceFee * additionalEntrants + raffleEntranceFee
+                );
+              } catch (err) {
+                reject(err);
+              }
+              resolve(winner);
+            });
+
+            const tx = await raffle.performUpkeep("0x");
+            const receipt = await tx.wait(1);
+
+            const log = receipt?.logs.find(
+              (log) => raffleInterface.parseLog(log)?.name === raffleInterface.getEvent("RequestedRaffleWinner")!.name
+            ) as EventLog;
+            const requestId = log.args["requestId"];
+
+            const winnerStartingBalance = await ethers.provider.getBalance(accounts[1]);
+            // console.log({ winnerStartingBalance });
+            await vrfCoordinatorV2_5Mock.fulfillRandomWords(requestId, await raffle.getAddress());
+            // await expect(vrfCoordinatorV2_5Mock.fulfillRandomWords(requestId, raffleAddress))
+            //   .to.emit(vrfCoordinatorV2_5Mock, "RandomWordsFulfilled")
+            //   .withArgs(requestId);
+          });
+        });
       });
     });

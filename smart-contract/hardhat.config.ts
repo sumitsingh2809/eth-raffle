@@ -42,6 +42,9 @@ const config: HardhatUserConfig = {
     deployer: { default: 0 },
     player: { default: 1 },
   },
+  mocha: {
+    timeout: 1000 * 300,
+  },
 };
 
 export default config;
