@@ -198,6 +198,7 @@ import { RaffleInterface } from "../../typechain-types/Raffle";
           await new Promise(async (resolve, reject) => {
             // raffle.once("WinnerPicked", () => {});
             raffle.once(raffle.filters.WinnerPicked(), async (winner) => {
+              console.log("WinnerPicked event fired!");
               try {
                 const recentWinner = await raffle.getRecentWinner();
                 const raffleState = await raffle.getRaffleState();

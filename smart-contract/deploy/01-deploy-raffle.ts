@@ -6,8 +6,6 @@ import { developmentChains, networkConfig } from "../helper-hardhat-config";
 import { VRFCoordinatorV2_5Mock } from "../typechain-types";
 import { verify } from "../utils/verify";
 
-const VRF_SUB_FUND_AMOUNT = ethers.parseEther("100");
-
 const deployRaffle: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { getNamedAccounts, deployments } = hre;
   const { deploy, log } = deployments;
@@ -34,6 +32,7 @@ const deployRaffle: DeployFunction = async function (hre: HardhatRuntimeEnvironm
     subscriptionId = subscriptionCreatedEvent.args["subId"];
 
     // Fund Subscription
+    const VRF_SUB_FUND_AMOUNT = ethers.parseEther("100");
     await vrfCoordinatorV2_5Mock.fundSubscription(subscriptionId, VRF_SUB_FUND_AMOUNT);
   } else {
     vrfCoordinatorAddress = networkConfig[chainId]["vrfCoordinatorV2"];
