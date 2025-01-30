@@ -3,7 +3,6 @@
 import { useWeb3Modal } from '@web3modal/wagmi/react';
 import { useEffect, useState } from 'react';
 import { useAccount, useDisconnect } from 'wagmi';
-import styles from '../app/page.module.css';
 
 export default function ManualHeader() {
   const account = useAccount();
@@ -31,7 +30,7 @@ export default function ManualHeader() {
   }, [account.isConnected]);
 
   return (
-    <div className={styles.page}>
+    <div>
       {isConnected ? (
         <div>
           Connected to {account.address?.slice(0, 6)}...{account.address?.slice(account.address.length - 4)} <br />

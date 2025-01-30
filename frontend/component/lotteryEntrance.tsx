@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import { Abi, Address, formatEther } from 'viem';
 import { useAccount } from 'wagmi';
 import { readContract } from 'wagmi/actions';
-import styles from '../app/page.module.css';
 const { contractAddresses } = constants;
 
 export default function LotteryEntrance() {
@@ -48,5 +47,17 @@ export default function LotteryEntrance() {
     }
   }, [abi, account.isConnected, raffleAddress]);
 
-  return <div className={styles.page}>Lottery Entrance Fee: {formatEther(entranceFee)} ETH</div>;
+  return (
+    <div>
+      Hi from Lottery Entrance
+      {raffleAddress ? (
+        <div>
+          <button>Enter Raffle</button>
+          Lottery Entrance Fee: {formatEther(entranceFee)} ETH
+        </div>
+      ) : (
+        <div>No Raffle Address Detected</div>
+      )}
+    </div>
+  );
 }

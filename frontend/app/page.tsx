@@ -2,11 +2,10 @@
 
 import LotteryEntrance from '@/component/lotteryEntrance';
 import ManualHeader from '@/component/manualHeader';
-import styles from './page.module.css';
 
 export default function Home() {
   return (
-    <div className={styles.page}>
+    <div>
       Decentralized Raffle
       <ManualHeader />
       <LotteryEntrance />
